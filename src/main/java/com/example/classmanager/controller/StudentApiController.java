@@ -47,4 +47,9 @@ public class StudentApiController {
     public void delete(@PathVariable Long id) {
         studentService.deleteStudent(id);
     }
+    // SEARCH
+    @GetMapping("/search")
+    public List<Student> search(@RequestParam String name) {
+        return studentService.searchStudentsByName(name);
+    }
 }
