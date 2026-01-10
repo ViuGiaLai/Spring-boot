@@ -78,9 +78,14 @@
 
         <div class="card shadow mb-4">
             <div class="profile-header text-center">
-                <img src="https://ui-avatars.com/api/?name=${student.name}&background=random&size=200" 
-                     alt="Profile Image" class="profile-img mb-3">
-                <h2 class="mb-1" th:text="${student.name}"></h2>
+                <img 
+                    th:src="'https://ui-avatars.com/api/?name=' + ${student.name} + '&background=random&color=fff&size=128'"
+                    alt="Avatar"
+                    class="rounded-circle mb-2"
+                    width="80"
+                    height="80"
+                 />
+                    <h2 class="mb-1" th:text="${student.name}"></h2>
                 <p class="mb-0">Mã sinh viên: <span th:text="${student.id}"></span></p>
             </div>
             

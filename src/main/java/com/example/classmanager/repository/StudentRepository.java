@@ -1,6 +1,6 @@
-package com.example.demo.repository;
+package com.example.classmanager.repository;
 
-import com.example.demo.entity.Student;
+import com.example.classmanager.entity.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
