@@ -1,197 +1,465 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Sinh viên</title>
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #4e73df;
+            --primary-color: #4673df;
             --secondary-color: #858796;
             --success-color: #1cc88a;
             --info-color: #36b9cc;
             --warning-color: #f6c23e;
             --danger-color: #e74a3b;
         }
-        
+
         body {
             background-color: #f8f9fc;
         }
-        
+
         .card {
             border: none;
             border-radius: 0.35rem;
             box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
         }
-        
+
         .card-header {
-            background-color: #f8f9fc;
+            background-color: var(--primary-color);
             border-bottom: 1px solid #e3e6f0;
-            font-weight: 600;
+            font-weight: bold;
+            color: white;
         }
-        
+
         .table th {
-            background-color: #f8f9fc;
-            font-weight: 600;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
             text-transform: uppercase;
             font-size: 0.7rem;
             letter-spacing: 0.05em;
-            color: #4e73df;
         }
-        
+
         .btn-primary {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
         }
-        
-        .btn-info {
-            background-color: var(--info-color);
-            border-color: var(--info-color);
+
+        .btn-primary:hover {
+            background-color: #224abe;
+            border-color: #224abe;
         }
-        
+
         .btn-sm {
             padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-            line-height: 1.5;
-            border-radius: 0.2rem;
+            font-size: 0.7rem;
         }
-        
+
+        .action-buttons {
+            display: flex;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons .btn {
+            margin: 1px;
+        }
+
         .search-box {
             max-width: 400px;
         }
-        
-        .action-buttons .btn {
-            margin-right: 5px;
+
+        .spinner-border {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .alert {
+            margin-top: 1rem;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.35rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+
+        .modal-header {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
         }
     </style>
 </head>
+
 <body>
     <div class="container-fluid py-4">
+        <!-- Header -->
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">
-                <i class="fas fa-user-graduate me-2"></i>Quản lý Sinh viên
+                <i class="fas fa-users me-2"></i>Quản lý Sinh viên
             </h1>
-            <div class="d-flex">
-                <a href="/students" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-                    <i class="fas fa-sync-alt fa-sm text-white-50"></i> Làm mới
-                </a>
+        </div>
+
+        <!-- Alert Messages -->
+        <div id="alertContainer"></div>
+
+        <!-- Search and Add Button -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-6">
+                        <form id="searchForm" class="d-flex search-box">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm theo tên..."
+                                required>
+                            <button type="submit" class="btn btn-primary ms-2">
+                                <i class="fas fa-search"></i> Tìm
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#studentModal"
+                            onclick="resetForm()">
+                            <i class="fas fa-plus me-2"></i>Thêm Sinh viên
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary me-3">
-                        <i class="fas fa-list me-2"></i>Danh sách sinh viên
-                    </h6>
-
-                    <a th:href="@{/students/new}"
-                    class="btn btn-success btn-sm">
-                        <i class="fas fa-plus"></i> Thêm sinh viên
-                    </a>
-                </div>
-
-                <form th:action="@{/students/search}" method="get" class="d-flex search-box">
-                    <div class="input-group">
-                        <input type="text" name="name" class="form-control bg-light border-0 small" 
-                               placeholder="Tìm kiếm theo tên..." th:value="${param.name}" 
-                               aria-label="Search" aria-describedby="basic-addon2">
-                        <button class="btn btn-primary" type="submit">
-                            <i class="fas fa-search fa-sm"></i>
-                        </button>
-                        <a href="/students" class="btn btn-secondary">
-                            <i class="fas fa-undo fa-sm"></i>
-                        </a>
-                    </div>
-                </form>
+        <!-- Students Table -->
+        <div class="card">
+            <div class="card-header py-3">
+                <h6 class="m-0">Danh sách Sinh viên</h6>
             </div>
             <div class="card-body">
+                <div id="loadingSpinner" class="text-center d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover" width="100%" cellspacing="0">
-                        <thead class="text-center">
+                    <table class="table table-hover table-bordered" id="studentsTable">
+                        <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Họ tên</th>
+                                <th>Tên</th>
                                 <th>Tuổi</th>
                                 <th>Email</th>
                                 <th>Giới tính</th>
                                 <th>Hành động</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr th:each="sv : ${students}" class="align-middle">
-                                <td class="text-center" th:text="${sv.id}"></td>
-                                <td th:text="${sv.name}"></td>
-                                <td class="text-center" th:text="${sv.age}"></td>
-                                <td>
-                                    <a th:if="${sv.email}" th:href="'mailto:' + ${sv.email}" class="text-decoration-none">
-                                        <i class="fas fa-envelope me-1"></i> <span th:text="${sv.email}"></span>
-                                    </a>
-                                    <span th:unless="${sv.email}" class="text-muted">Chưa có email</span>
-                                </td>
-                                <td class="text-center">
-                                    <span th:if="${sv.gender == 'Nam'}" class="badge bg-primary">
-                                        <i class="fas fa-male me-1"></i> <span th:text="${sv.gender}"></span>
-                                    </span>
-                                    <span th:if="${sv.gender == 'Nữ'}" class="badge bg-danger">
-                                        <i class="fas fa-female me-1"></i> <span th:text="${sv.gender}"></span>
-                                    </span>
-                                    <span th:if="${sv.gender != 'Nam' && sv.gender != 'Nữ'}" class="badge bg-secondary">
-                                        <i class="fas fa-question-circle me-1"></i> <span th:text="${sv.gender ?: 'Chưa xác định'}"></span>
-                                    </span>
-                                </td>
-                                <td class="text-center action-buttons">
-                                    <a th:href="@{/students/{id}(id=${sv.id})}" class="btn btn-info btn-sm" 
-                                       data-bs-toggle="tooltip" title="Xem chi tiết">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a th:href="@{/students/{id}/edit(id=${sv.id})}"
-                                        class="btn btn-warning btn-sm"
-                                        data-bs-toggle="tooltip"
-                                        title="Chỉnh sửa">
-                                            <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form th:action="@{/students/{id}/delete(id=${sv.id})}"
-                                        method="post"
-                                        class="d-inline"
-                                        onsubmit="return confirm('Bạn có chắc chắn muốn xóa sinh viên này?')">
-                                        <button type="submit"
-                                                class="btn btn-danger btn-sm"
-                                                data-bs-toggle="tooltip"
-                                                title="Xóa">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-
-                                </td>
-                            </tr>
-                            <tr th:if="${#lists.isEmpty(students)}">
-                                <td colspan="6" class="text-center text-muted py-4">
-                                    <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
-                                    Không tìm thấy sinh viên nào
-                                </td>
-                            </tr>
+                        <tbody id="studentsList">
+                            <!-- Students will be loaded here -->
                         </tbody>
                     </table>
+                </div>
+                <div id="emptyMessage" class="text-center text-muted d-none">
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <p>Không tìm thấy sinh viên nào</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap Bundle with Popper -->
+    <!-- Student Modal -->
+    <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="studentModalLabel">Thêm/Sửa Sinh viên</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="studentForm">
+                        <input type="hidden" id="studentId">
+                        <div class="mb-3">
+                            <label for="studentName" class="form-label">Tên Sinh viên</label>
+                            <input type="text" class="form-control" id="studentName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="studentAge" class="form-label">Tuổi</label>
+                            <input type="number" class="form-control" id="studentAge" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="studentEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="studentEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Giới tính</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="studentGender" id="modalMale" value="Nam">
+                                <label class="form-check-label" for="modalMale">Nam</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="studentGender" id="modalFemale" value="Nữ">
+                                <label class="form-check-label" for="modalFemale">Nữ</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="studentGender" id="modalOther" value="Khác">
+                                <label class="form-check-label" for="modalOther">Khác</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="saveStudent()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Enable tooltips
-        document.addEventListener('DOMContentLoaded', function() {
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:8080/api/students';
+        const modal = new bootstrap.Modal(document.getElementById('studentModal'));
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function () {
+            loadStudents();
+            document.getElementById('searchForm').addEventListener('submit', handleSearch);
         });
+
+        // Load all students
+        async function loadStudents() {
+            showLoading(true);
+            try {
+                const response = await fetch(API_BASE_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const students = await response.json();
+                displayStudents(students);
+                hideAlert();
+            } catch (error) {
+                showAlert('Lỗi khi tải danh sách sinh viên: ' + error.message, 'danger');
+                console.error('Error:', error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Display students in table
+        function displayStudents(students) {
+            const tbody = document.getElementById('studentsList');
+            const emptyMessage = document.getElementById('emptyMessage');
+
+            if (students.length === 0) {
+                tbody.innerHTML = '';
+                emptyMessage.classList.remove('d-none');
+                return;
+            }
+
+            emptyMessage.classList.add('d-none');
+            tbody.innerHTML = students.map(student => `
+                <tr>
+                    <td>${student.id}</td>
+                    <td>${student.name}</td>
+                    <td>${student.age}</td>
+                    <td>${student.email}</td>
+                    <td>${student.gender || 'Chưa cập nhật'}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="/students/${student.id}" class="btn btn-info btn-sm" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i> Xem
+                            </a>
+                            <button class="btn btn-warning btn-sm" onclick="editStudent(${student.id})" title="Sửa">
+                                <i class="fas fa-edit"></i> Sửa
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteStudent(${student.id})" title="Xóa">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Search students
+        async function handleSearch(e) {
+            e.preventDefault();
+            const searchName = document.getElementById('searchInput').value.trim();
+
+            if (!searchName) {
+                loadStudents();
+                return;
+            }
+
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE_URL}/search?name=${encodeURIComponent(searchName)}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const students = await response.json();
+                displayStudents(students);
+                hideAlert();
+            } catch (error) {
+                showAlert('Lỗi khi tìm kiếm: ' + error.message, 'danger');
+                console.error('Error:', error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('studentForm').reset();
+            document.getElementById('studentId').value = '';
+            document.getElementById('studentModalLabel').textContent = 'Thêm Sinh viên';
+        }
+
+        // Edit student
+        async function editStudent(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/${id}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const student = await response.json();
+
+                document.getElementById('studentId').value = student.id;
+                document.getElementById('studentName').value = student.name;
+                document.getElementById('studentAge').value = student.age;
+                document.getElementById('studentEmail').value = student.email;
+
+                // Set gender radio button
+                const gender = student.gender || 'Nam';
+                document.querySelectorAll('input[name="studentGender"]').forEach(radio => {
+                    if (radio.value === gender) {
+                        radio.checked = true;
+                    }
+                });
+
+                document.getElementById('studentModalLabel').textContent = 'Sửa Sinh viên';
+
+                modal.show();
+            } catch (error) {
+                showAlert('Lỗi khi tải thông tin sinh viên: ' + error.message, 'danger');
+                console.error('Error:', error);
+            }
+        }
+
+        // Save student (create or update)
+        async function saveStudent() {
+            const id = document.getElementById('studentId').value;
+            const student = {
+                name: document.getElementById('studentName').value,
+                age: parseInt(document.getElementById('studentAge').value),
+                email: document.getElementById('studentEmail').value,
+                gender: document.querySelector('input[name="studentGender"]:checked')?.value || 'Nam'
+            };
+
+            if (!student.name || !student.age || !student.email) {
+                showAlert('Vui lòng điền đầy đủ thông tin', 'warning');
+                return;
+            }
+
+            try {
+                let response;
+                if (id) {
+                    // Update
+                    student.id = parseInt(id);
+                    response = await fetch(`${API_BASE_URL}/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(student)
+                    });
+                } else {
+                    // Create
+                    response = await fetch(API_BASE_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(student)
+                    });
+                }
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                modal.hide();
+                showAlert(id ? 'Cập nhật sinh viên thành công!' : 'Thêm sinh viên thành công!', 'success');
+                loadStudents();
+            } catch (error) {
+                showAlert('Lỗi: ' + error.message, 'danger');
+                console.error('Error:', error);
+            }
+        }
+
+        // Delete student
+        async function deleteStudent(id) {
+            if (!confirm('Bạn có chắc chắn muốn xóa sinh viên này?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                showAlert('Xóa sinh viên thành công!', 'success');
+                loadStudents();
+            } catch (error) {
+                showAlert('Lỗi khi xóa: ' + error.message, 'danger');
+                console.error('Error:', error);
+            }
+        }
+
+        // Show/hide loading spinner
+        function showLoading(show) {
+            const spinner = document.getElementById('loadingSpinner');
+            if (show) {
+                spinner.classList.remove('d-none');
+            } else {
+                spinner.classList.add('d-none');
+            }
+        }
+
+        // Show alert message
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertId = 'alert-' + Date.now();
+            const alertHTML = `
+                <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            alertContainer.insertAdjacentHTML('beforeend', alertHTML);
+
+            // Auto-remove alert after 5 seconds
+            setTimeout(() => {
+                const alert = document.getElementById(alertId);
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        // Hide all alerts
+        function hideAlert() {
+            document.getElementById('alertContainer').innerHTML = '';
+        }
     </script>
 </body>
+
 </html>

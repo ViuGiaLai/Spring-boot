@@ -1,205 +1,302 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thông tin chi tiết sinh viên</title>
-    <!-- Bootstrap 5 CSS -->
+    <title>Chi tiết Sinh viên</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #4e73df;
+            --primary-color: #4673df;
             --secondary-color: #858796;
             --success-color: #1cc88a;
-            --info-color: #36b9cc;
-            --warning-color: #f6c23e;
             --danger-color: #e74a3b;
         }
-        
+
         body {
             background-color: #f8f9fc;
         }
-        
+
         .card {
             border: none;
             border-radius: 0.35rem;
             box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
         }
-        
+
         .card-header {
-            background-color: #f8f9fc;
+            background-color: var(--primary-color);
             border-bottom: 1px solid #e3e6f0;
-            font-weight: 600;
+            font-weight: bold;
+            color: white;
         }
-        
+
         .detail-label {
             font-weight: 600;
-            color: #5a5c69;
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
-        
+
+        .detail-value {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
         .profile-header {
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border-radius: 0.35rem 0.35rem 0 0;
-            padding: 1.5rem;
+            padding: 2rem;
+            border-radius: 0.35rem;
+            margin-bottom: 2rem;
         }
-        
-        .profile-img {
+
+        .profile-avatar {
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            border: 5px solid rgba(255, 255, 255, 0.2);
-            object-fit: cover;
+            background-color: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin-bottom: 1rem;
         }
-        
-        .gender-badge {
-            font-size: 1rem;
-            padding: 0.35rem 0.8rem;
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #224abe;
+            border-color: #224abe;
+        }
+
+        .spinner-border {
+            width: 2rem;
+            height: 2rem;
+        }
+
+        .alert {
+            margin-top: 1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
         }
     </style>
 </head>
 <body>
-    <div class="container-fluid py-4">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">
-                <i class="fas fa-user-graduate me-2"></i>Thông tin chi tiết
-            </h1>
-            <div>
-                <a href="/students" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left me-1"></i> Quay lại
-                </a>
-                <a th:href="@{/students/{id}/edit(id=${student.id})}" class="btn btn-primary ms-2">
-                    <i class="fas fa-edit me-1"></i> Chỉnh sửa
-                </a>
+    <div class="container py-5">
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang tải...</span>
             </div>
         </div>
 
-        <div class="card shadow mb-4">
-            <div class="profile-header text-center">
-                <img 
-                    th:src="'https://ui-avatars.com/api/?name=' + ${student.name} + '&background=random&color=fff&size=128'"
-                    alt="Avatar"
-                    class="rounded-circle mb-2"
-                    width="80"
-                    height="80"
-                 />
-                    <h2 class="mb-1" th:text="${student.name}"></h2>
-                <p class="mb-0">Mã sinh viên: <span th:text="${student.id}"></span></p>
+        <!-- Alert Messages -->
+        <div id="alertContainer"></div>
+
+        <!-- Content (Hidden until loaded) -->
+        <div id="content" class="d-none">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <a href="students.html" class="btn btn-secondary mb-3">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </div>
             </div>
-            
-            <div class="card-body">
-                <div class="row mb-4">
-                    <div class="col-md-6 mb-3">
-                        <div class="card h-100">
-                            <div class="card-header">
-                                <h6 class="m-0 font-weight-bold text-primary">
-                                    <i class="fas fa-info-circle me-2"></i>Thông tin cá nhân
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="row mb-3">
-                                    <div class="col-5 detail-label">Họ và tên:</div>
-                                    <div class="col-7" th:text="${student.name}"></div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-5 detail-label">Tuổi:</div>
-                                    <div class="col-7" th:text="${student.age}"></div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-5 detail-label">Giới tính:</div>
-                                    <div class="col-7">
-                                        <span th:if="${student.gender == 'Nam'}" class="badge bg-primary gender-badge">
-                                            <i class="fas fa-male me-1"></i> <span th:text="${student.gender}"></span>
-                                        </span>
-                                        <span th:if="${student.gender == 'Nữ'}" class="badge bg-danger gender-badge">
-                                            <i class="fas fa-female me-1"></i> <span th:text="${student.gender}"></span>
-                                        </span>
-                                        <span th:if="${student.gender != 'Nam' && student.gender != 'Nữ'}" class="badge bg-secondary gender-badge">
-                                            <i class="fas fa-question-circle me-1"></i> <span th:text="${student.gender ?: 'Chưa xác định'}"></span>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h2 id="studentName" class="mb-2">-</h2>
+                <p class="mb-0" id="studentEmail">-</p>
+            </div>
+
+            <!-- Details Card -->
+            <div class="card">
+                <div class="card-header py-3">
+                    <h6 class="m-0">Thông tin Chi tiết</h6>
+                </div>
+                <div class="card-body">
+                    <div class="info-grid">
+                        <div>
+                            <p class="detail-label">
+                                <i class="fas fa-id-badge me-2"></i>Mã Sinh viên
+                            </p>
+                            <p class="detail-value" id="studentId">-</p>
                         </div>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <div class="card h-100">
-                            <div class="card-header">
-                                <h6 class="m-0 font-weight-bold text-primary">
-                                    <i class="fas fa-envelope me-2"></i>Thông tin liên hệ
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="row mb-3">
-                                    <div class="col-5 detail-label">Email:</div>
-                                    <div class="col-7">
-                                        <a th:if="${student.email}" th:href="'mailto:' + ${student.email}" class="text-decoration-none">
-                                            <i class="fas fa-envelope me-1"></i> <span th:text="${student.email}"></span>
-                                        </a>
-                                        <span th:unless="${student.email}" class="text-muted">Chưa có email</span>
-                                    </div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-5 detail-label">Ngày tạo:</div>
-                                    <div class="col-7">
-                                        <i class="far fa-calendar-alt me-1"></i> <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div>
+                            <p class="detail-label">
+                                <i class="fas fa-birthday-cake me-2"></i>Tuổi
+                            </p>
+                            <p class="detail-value" id="studentAge">-</p>
+                        </div>
+                        <div>
+                            <p class="detail-label">
+                                <i class="fas fa-envelope me-2"></i>Email
+                            </p>
+                            <p class="detail-value" id="studentEmailDetail">-</p>
+                        </div>
+                        <div>
+                            <p class="detail-label">
+                                <i class="fas fa-venus-mars me-2"></i>Giới tính
+                            </p>
+                            <p class="detail-value" id="studentGender">-</p>
                         </div>
                     </div>
                 </div>
-                
-                <div class="d-flex justify-content-between mt-4">
-                    <a href="/students" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách
-                    </a>
-                    <div>
-                        <button class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                            <i class="fas fa-trash me-1"></i> Xóa sinh viên
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="action-buttons">
+                        <a href="#" id="editBtn" class="btn btn-warning">
+                            <i class="fas fa-edit me-2"></i>Sửa
+                        </a>
+                        <button onclick="deleteStudent()" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Xóa
                         </button>
-                        <a th:href="@{/students/{id}/edit(id=${student.id})}" class="btn btn-primary">
-                            <i class="fas fa-edit me-1"></i> Chỉnh sửa thông tin
+                        <a href="students.html" class="btn btn-secondary">
+                            <i class="fas fa-list me-2"></i>Danh sách
                         </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="deleteModalLabel">
-                        <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận xóa
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Bạn có chắc chắn muốn xóa sinh viên <strong th:text="${student.name}"></strong>?</p>
-                    <p class="text-danger mb-0">Hành động này không thể hoàn tác!</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-1"></i> Hủy bỏ
-                    </button>
-                    <form th:action="@{/students/{id}(id=${student.id})}" method="post" class="d-inline">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-trash me-1"></i> Xóa
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:8080/api/students';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const studentId = urlParams.get('id');
+
+            if (studentId) {
+                loadStudentDetail(studentId);
+            } else {
+                showAlert('Không tìm thấy ID sinh viên', 'danger');
+                setTimeout(() => {
+                    window.location.href = 'students.html';
+                }, 2000);
+            }
+        });
+
+        // Load student detail
+        async function loadStudentDetail(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/${id}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const student = await response.json();
+                displayStudentDetail(student);
+            } catch (error) {
+                showAlert('Lỗi khi tải thông tin sinh viên: ' + error.message, 'danger');
+                console.error('Error:', error);
+                setTimeout(() => {
+                    window.location.href = 'students.html';
+                }, 2000);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Display student detail
+        function displayStudentDetail(student) {
+            document.getElementById('studentId').textContent = student.id || '-';
+            document.getElementById('studentName').textContent = student.name || '-';
+            document.getElementById('studentAge').textContent = student.age || '-';
+            document.getElementById('studentEmail').textContent = student.email || '-';
+            document.getElementById('studentEmailDetail').textContent = student.email || '-';
+            document.getElementById('studentGender').textContent = student.gender || 'Chưa cập nhật';
+            
+            // Set edit button href
+            document.getElementById('editBtn').href = `student-form.html?id=${student.id}`;
+            
+            // Show content and hide spinner
+            document.getElementById('content').classList.remove('d-none');
+            document.getElementById('loadingSpinner').classList.add('d-none');
+        }
+
+        // Delete student
+        async function deleteStudent() {
+            const studentId = document.getElementById('studentId').textContent;
+
+            if (!confirm('Bạn có chắc chắn muốn xóa sinh viên này?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/${studentId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                showAlert('Xóa sinh viên thành công!', 'success');
+                setTimeout(() => {
+                    window.location.href = 'students.html';
+                }, 2000);
+            } catch (error) {
+                showAlert('Lỗi khi xóa: ' + error.message, 'danger');
+                console.error('Error:', error);
+            }
+        }
+
+        // Show/hide loading spinner
+        function showLoading(show) {
+            const spinner = document.getElementById('loadingSpinner');
+            if (show) {
+                spinner.classList.remove('d-none');
+            } else {
+                spinner.classList.add('d-none');
+            }
+        }
+
+        // Show alert message
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertId = 'alert-' + Date.now();
+            const alertHTML = `
+                <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            alertContainer.insertAdjacentHTML('beforeend', alertHTML);
+
+            // Auto-remove alert after 5 seconds
+            setTimeout(() => {
+                const alert = document.getElementById(alertId);
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+    </script>
 </body>
 </html>
