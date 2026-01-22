@@ -1,17 +1,27 @@
 package com.example.classmanager.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "students")
 public class Student {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+        name = "UUID",
+        strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    @Column(name = "id", updatable = false, nullable = false)
+    private UUID id;
+    
     private String name;
     private int age;
     private String email;
@@ -20,7 +30,7 @@ public class Student {
     public Student() {
     }
 
-    public Student(Long id, String name, int age, String email, String gender) {
+    public Student(UUID id, String name, int age, String email, String gender) {
         this.id = id;
         this.name = name;
         this.age = age;
@@ -29,11 +39,11 @@ public class Student {
     }
 
     // Getters and Setters
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

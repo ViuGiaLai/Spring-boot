@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/students")
@@ -33,7 +34,7 @@ public class StudentController {
 
     // detail view student
     @GetMapping("/{id}")
-    public String viewStudent(@PathVariable Long id, Model model) {
+    public String viewStudent(@PathVariable UUID id, Model model) {
         model.addAttribute("student", studentService.getStudentById(id));
         return "student-detail";
     }
@@ -41,7 +42,7 @@ public class StudentController {
     // API endpoint to get student details as JSON
     @GetMapping("/api/students/{id}")
     @ResponseBody
-    public Student getStudentByIdApi(@PathVariable Long id) {
+    public Student getStudentByIdApi(@PathVariable UUID id) {
         return studentService.getStudentById(id);
     }
 
@@ -61,21 +62,21 @@ public class StudentController {
 
     // Form sửa
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Long id, Model model) {
+    public String editForm(@PathVariable UUID id, Model model) {
         model.addAttribute("student", studentService.getStudentById(id));
         return "student-form";
     }
 
     // Lưu sửa
     @PostMapping("/{id}")
-    public String updateStudent(@PathVariable Long id, @ModelAttribute Student student) {
+    public String updateStudent(@PathVariable UUID id, @ModelAttribute Student student) {
         student.setId(id);
         studentService.saveStudent(student);
         return "redirect:/students";
     }
 
     @PostMapping("/{id}/delete")
-    public String deleteStudent(@PathVariable Long id) {
+    public String deleteStudent(@PathVariable UUID id) {
         studentService.deleteStudent(id);
         return "redirect:/students";
     }

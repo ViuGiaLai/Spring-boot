@@ -80,22 +80,6 @@
         .alert {
             margin-top: 1rem;
         }
-
-        .form-container {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 0.35rem;
-            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-        }
-
-        .modal-header {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .modal-header .btn-close {
-            filter: brightness(0) invert(1);
-        }
     </style>
 </head>
 
@@ -125,10 +109,9 @@
                         </form>
                     </div>
                     <div class="col-md-6 text-end">
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#studentModal"
-                            onclick="resetForm()">
+                        <a href="/students/new" class="btn btn-success">
                             <i class="fas fa-plus me-2"></i>Thêm Sinh viên
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -170,59 +153,10 @@
         </div>
     </div>
 
-    <!-- Student Modal -->
-    <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="studentModalLabel">Thêm/Sửa Sinh viên</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="studentForm">
-                        <input type="hidden" id="studentId">
-                        <div class="mb-3">
-                            <label for="studentName" class="form-label">Tên Sinh viên</label>
-                            <input type="text" class="form-control" id="studentName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="studentAge" class="form-label">Tuổi</label>
-                            <input type="number" class="form-control" id="studentAge" min="1" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="studentEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="studentEmail" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Giới tính</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="studentGender" id="modalMale" value="Nam">
-                                <label class="form-check-label" for="modalMale">Nam</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="studentGender" id="modalFemale" value="Nữ">
-                                <label class="form-check-label" for="modalFemale">Nữ</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="studentGender" id="modalOther" value="Khác">
-                                <label class="form-check-label" for="modalOther">Khác</label>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-primary" onclick="saveStudent()">Lưu</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // API Configuration
-        const API_BASE_URL = 'http://localhost:8080/api/students';
-        const modal = new bootstrap.Modal(document.getElementById('studentModal'));
+        const API_BASE_URL = window.location.origin + '/api/students';
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function () {
@@ -273,10 +207,10 @@
                             <a href="/students/${student.id}" class="btn btn-info btn-sm" title="Xem chi tiết">
                                 <i class="fas fa-eye"></i> Xem
                             </a>
-                            <button class="btn btn-warning btn-sm" onclick="editStudent(${student.id})" title="Sửa">
+                            <a href="/students/${student.id}/edit" class="btn btn-warning btn-sm" title="Sửa">
                                 <i class="fas fa-edit"></i> Sửa
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteStudent(${student.id})" title="Xóa">
+                            </a>
+                            <button onclick="deleteStudent('${student.id}')" class="btn btn-danger btn-sm" title="Xóa">
                                 <i class="fas fa-trash"></i> Xóa
                             </button>
                         </div>
@@ -285,177 +219,60 @@
             `).join('');
         }
 
-        // Search students
+        // Handle search
         async function handleSearch(e) {
             e.preventDefault();
-            const searchName = document.getElementById('searchInput').value.trim();
-
-            if (!searchName) {
-                loadStudents();
-                return;
-            }
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            if (!searchTerm) return;
 
             showLoading(true);
             try {
-                const response = await fetch(`${API_BASE_URL}/search?name=${encodeURIComponent(searchName)}`);
+                const response = await fetch(`${API_BASE_URL}/search?name=${encodeURIComponent(searchTerm)}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const students = await response.json();
                 displayStudents(students);
-                hideAlert();
             } catch (error) {
                 showAlert('Lỗi khi tìm kiếm: ' + error.message, 'danger');
-                console.error('Error:', error);
             } finally {
                 showLoading(false);
             }
         }
 
-        // Reset form
-        function resetForm() {
-            document.getElementById('studentForm').reset();
-            document.getElementById('studentId').value = '';
-            document.getElementById('studentModalLabel').textContent = 'Thêm Sinh viên';
-        }
-
-        // Edit student
-        async function editStudent(id) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/${id}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const student = await response.json();
-
-                document.getElementById('studentId').value = student.id;
-                document.getElementById('studentName').value = student.name;
-                document.getElementById('studentAge').value = student.age;
-                document.getElementById('studentEmail').value = student.email;
-
-                // Set gender radio button
-                const gender = student.gender || 'Nam';
-                document.querySelectorAll('input[name="studentGender"]').forEach(radio => {
-                    if (radio.value === gender) {
-                        radio.checked = true;
-                    }
-                });
-
-                document.getElementById('studentModalLabel').textContent = 'Sửa Sinh viên';
-
-                modal.show();
-            } catch (error) {
-                showAlert('Lỗi khi tải thông tin sinh viên: ' + error.message, 'danger');
-                console.error('Error:', error);
-            }
-        }
-
-        // Save student (create or update)
-        async function saveStudent() {
-            const id = document.getElementById('studentId').value;
-            const student = {
-                name: document.getElementById('studentName').value,
-                age: parseInt(document.getElementById('studentAge').value),
-                email: document.getElementById('studentEmail').value,
-                gender: document.querySelector('input[name="studentGender"]:checked')?.value || 'Nam'
-            };
-
-            if (!student.name || !student.age || !student.email) {
-                showAlert('Vui lòng điền đầy đủ thông tin', 'warning');
-                return;
-            }
-
-            try {
-                let response;
-                if (id) {
-                    // Update
-                    student.id = parseInt(id);
-                    response = await fetch(`${API_BASE_URL}/${id}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(student)
-                    });
-                } else {
-                    // Create
-                    response = await fetch(API_BASE_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(student)
-                    });
-                }
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                modal.hide();
-                showAlert(id ? 'Cập nhật sinh viên thành công!' : 'Thêm sinh viên thành công!', 'success');
-                loadStudents();
-            } catch (error) {
-                showAlert('Lỗi: ' + error.message, 'danger');
-                console.error('Error:', error);
-            }
-        }
-
         // Delete student
         async function deleteStudent(id) {
-            if (!confirm('Bạn có chắc chắn muốn xóa sinh viên này?')) {
-                return;
-            }
+            if (!confirm('Bạn có chắc chắn muốn xóa sinh viên này?')) return;
 
             try {
                 const response = await fetch(`${API_BASE_URL}/${id}`, {
                     method: 'DELETE'
                 });
-
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-
                 showAlert('Xóa sinh viên thành công!', 'success');
                 loadStudents();
             } catch (error) {
                 showAlert('Lỗi khi xóa: ' + error.message, 'danger');
-                console.error('Error:', error);
             }
         }
 
-        // Show/hide loading spinner
+        // Helper functions
         function showLoading(show) {
-            const spinner = document.getElementById('loadingSpinner');
-            if (show) {
-                spinner.classList.remove('d-none');
-            } else {
-                spinner.classList.add('d-none');
-            }
+            document.getElementById('loadingSpinner').classList.toggle('d-none', !show);
         }
 
-        // Show alert message
         function showAlert(message, type = 'info') {
             const alertContainer = document.getElementById('alertContainer');
-            const alertId = 'alert-' + Date.now();
-            const alertHTML = `
-                <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
                     ${message}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             `;
-            alertContainer.insertAdjacentHTML('beforeend', alertHTML);
-
-            // Auto-remove alert after 5 seconds
-            setTimeout(() => {
-                const alert = document.getElementById(alertId);
-                if (alert) {
-                    alert.remove();
-                }
-            }, 5000);
         }
 
-        // Hide all alerts
         function hideAlert() {
             document.getElementById('alertContainer').innerHTML = '';
         }
