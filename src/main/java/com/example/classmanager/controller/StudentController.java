@@ -37,6 +37,13 @@ public class StudentController {
         model.addAttribute("student", studentService.getStudentById(id));
         return "student-detail";
     }
+    
+    // API endpoint to get student details as JSON
+    @GetMapping("/api/students/{id}")
+    @ResponseBody
+    public Student getStudentByIdApi(@PathVariable Long id) {
+        return studentService.getStudentById(id);
+    }
 
     // Form thêm
     @GetMapping("/new")
